@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>EANT-52MD 時尚穿搭派對賓果</title>
+    <title>EANT-52MD 時尚穿搭派對賓果 (5x5)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
     <style>
@@ -11,12 +11,12 @@
         .bingo-cell { transition: all 0.2s ease; }
     </style>
 </head>
-<body class="bg-slate-900 text-slate-100 min-h-screen flex flex-col items-center justify-between p-4">
+<body class="bg-slate-900 text-slate-100 min-h-screen flex flex-col items-center justify-between p-3 sm:p-4">
 
     <!-- 頂部導航與模式切換 -->
     <header class="w-full max-w-2xl flex justify-between items-center bg-slate-800 p-4 rounded-2xl shadow-lg mb-4 border border-slate-700">
         <div>
-            <h1 class="text-xl font-bold text-amber-400 tracking-wider">✨ 時尚派對賓果</h1>
+            <h1 class="text-xl font-bold text-amber-400 tracking-wider">✨ 時尚派對賓果 (5x5)</h1>
             <p id="user-status" class="text-xs text-slate-400 mt-0.5">尚未加入遊戲</p>
         </div>
         <div class="flex gap-2">
@@ -48,7 +48,7 @@
             <div class="bg-gradient-to-r from-amber-600/30 to-yellow-600/30 border border-amber-500/50 p-4 rounded-2xl flex items-center justify-between shadow-lg">
                 <div>
                     <span class="text-xs text-amber-300 font-bold tracking-widest uppercase">主持人最新叫號</span>
-                    <div id="current-called-display" class="text-2xl font-black text-amber-400 mt-0.5">等待主持人開牌...</div>
+                    <div id="current-called-display" class="text-xl sm:text-2xl font-black text-amber-400 mt-0.5">等待主持人開牌...</div>
                 </div>
                 <div class="text-right">
                     <span class="text-xs text-slate-400">當前連線數</span>
@@ -56,14 +56,14 @@
                 </div>
             </div>
 
-            <!-- 賓果卡片本體 (4x4) -->
-            <div class="bg-slate-800 p-4 rounded-2xl border border-slate-700 shadow-2xl">
+            <!-- 賓果卡片本體 (5x5) -->
+            <div class="bg-slate-800 p-3 sm:p-4 rounded-2xl border border-slate-700 shadow-2xl">
                 <div class="flex justify-between items-center mb-3">
                     <h3 id="card-title" class="font-bold text-amber-300 text-sm">卡片 #1</h3>
-                    <span class="text-xs text-slate-400">點擊格子即可劃記</span>
+                    <span class="text-xs text-slate-400">點擊格子即可劃記（中心為 FREE）</span>
                 </div>
-                <div id="bingo-grid" class="grid grid-cols-4 gap-2">
-                    <!-- 动态生成格子 -->
+                <div id="bingo-grid" class="grid grid-cols-5 gap-1.5 sm:gap-2">
+                    <!-- 動態生成 25 格 -->
                 </div>
             </div>
         </div>
@@ -114,9 +114,9 @@
     <!-- Firebase SDKs -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getDatabase, ref, set, get, onValue, update } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+        import { getDatabase, ref, set, get, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
-        // 你的專屬 Firebase 配置
+        // Firebase 配置
         const firebaseConfig = {
             apiKey: "AIzaSyC0D5jcL3P0v6twKi1FYouKZY7fxEc2OnU",
             authDomain: "fashion-bingo-f6326.firebaseapp.com",
@@ -131,31 +131,33 @@
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
 
-        // 90張卡片的資料庫模擬與項目清單
+        // 題目與號碼清單
         const ALL_ITEMS = [
             "墨鏡", "頭巾/絲巾", "帽子/項鍊", "手鍊/戒指",
             "耳環/耳骨夾", "腰鏈/皮帶/金屬扣環", "胸針/別針", "格紋/豹紋",
             "香奈兒元素", "Oversize", "丹寧牛仔", "雛菊元素",
-            "撞色/特殊色", "皮革單品", "1", "2", "3", "5", "6", "7", "8", "9", "10", "11", "【FREE GD & Jennie】"
+            "撞色/特殊色", "皮革單品", "1", "2", "3", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15"
         ];
 
-        // 產生 90 張卡片內容的偽隨機生成器（根據編號固定排列）
+        // 產生 5x5 (25格) 賓果卡內容，中心為 FREE 牌
         function getCardItems(cardId) {
-            let items = [...ALL_ITEMS];
-            // 簡單用編號當種子洗牌
+            let items = ALL_ITEMS.filter(item => item !== "【FREE GD & Jennie】");
             let seed = cardId;
             for (let i = items.length - 1; i > 0; i--) {
                 seed = (seed * 9301 + 49297) % 233280;
                 let j = Math.floor((seed / 233280) * (i + 1));
                 [items[i], items[j]] = [items[j], items[i]];
             }
-            // 確保每次固定取 16 格 (4x4)
-            return items.slice(0, 16);
+            let card25 = items.slice(0, 24);
+            // 插入中心 FREE 格（第 13 格，索引 12）
+            card25.splice(12, 0, "【FREE GD & Jennie】");
+            return card25;
         }
 
         let currentUser = null;
         let currentCardId = 1;
-        let myMarks = Array(16).fill(false);
+        let myMarks = Array(25).fill(false);
+        myMarks[12] = true; // 中心免費格預設劃記
         let calledList = [];
 
         window.switchView = function(view) {
@@ -186,7 +188,8 @@
 
             currentUser = name;
             currentCardId = cardId;
-            myMarks = Array(16).fill(false);
+            myMarks = Array(25).fill(false);
+            myMarks[12] = true; // 中心 FREE 格預設劃記
 
             document.getElementById('user-status').innerText = `玩家：${name} (卡片 #${cardId})`;
             switchView('player');
@@ -196,14 +199,14 @@
 
         function renderCard() {
             const items = getCardItems(currentCardId);
-            document.getElementById('card-title').innerText = `卡片 #${currentCardId} (EANT-52MD)`;
+            document.getElementById('card-title').innerText = `卡片 #${currentCardId} (EANT-52MD 5x5)`;
             const grid = document.getElementById('bingo-grid');
             grid.innerHTML = '';
 
             items.forEach((item, index) => {
                 const cell = document.createElement('div');
                 const isMarked = myMarks[index];
-                cell.className = `bingo-cell h-20 rounded-xl p-2 flex items-center justify-center text-center text-xs font-bold cursor-pointer border ${isMarked ? 'bg-amber-500 text-slate-950 border-amber-400 shadow-md' : 'bg-slate-900 text-slate-200 border-slate-700 hover:border-slate-500'}`;
+                cell.className = `bingo-cell h-16 sm:h-20 rounded-xl p-1.5 sm:p-2 flex items-center justify-center text-center text-[11px] sm:text-xs font-bold cursor-pointer border select-none ${isMarked ? 'bg-amber-500 text-slate-950 border-amber-400 shadow-md font-black' : 'bg-slate-900 text-slate-200 border-slate-700 hover:border-slate-500'}`;
                 cell.innerText = item;
                 cell.onclick = () => toggleMark(index);
                 grid.appendChild(cell);
@@ -219,11 +222,14 @@
 
         function calculateLines() {
             let lines = 0;
-            // 4x4 連線計算 (橫線 4 條, 直線 4 條, 對角線 2 條)
+            // 5x5 連線組合 (橫5、直5、斜2)
             const winningCombos = [
-                [0,1,2,3], [4,5,6,7], [8,9,10,11], [12,13,14,15], // 橫
-                [0,4,8,12], [1,5,9,13], [2,6,10,14], [3,7,11,15], // 直
-                [0,5,10,15], [3,6,9,12] // 對角
+                // 橫線
+                [0,1,2,3,4], [5,6,7,8,9], [10,11,12,13,14], [15,16,17,18,19], [20,21,22,23,24],
+                // 直線
+                [0,5,10,15,20], [1,6,11,16,21], [2,7,12,17,22], [3,8,13,18,23], [4,9,14,19,24],
+                // 對角線
+                [0,6,12,18,24], [4,8,12,16,20]
             ];
 
             winningCombos.forEach(combo => {
@@ -242,22 +248,20 @@
                 name: currentUser,
                 cardId: currentCardId,
                 lines: lines,
-                bingo: lines >= 2, // 2條線以上算達標
+                bingo: lines >= 3, // 5x5 通常 3 條線以上算 BINGO
                 lastUpdate: Date.now()
             });
         }
 
-        // 監聽 Firebase 遊戲全域狀態
+        // 監聽全域遊戲狀態
         const gameRef = ref(db, 'gameState');
         onValue(gameRef, (snapshot) => {
             const data = snapshot.val();
             if (data) {
                 calledList = data.calledList || [];
-                // 更新玩家畫面中的最新叫號
                 const latest = calledList.length > 0 ? calledList[calledList.length - 1] : '尚未開牌';
                 document.getElementById('current-called-display').innerText = latest;
 
-                // 更新主持人歷史紀錄
                 const historyDiv = document.getElementById('host-called-history');
                 if (calledList.length > 0) {
                     historyDiv.innerHTML = calledList.map(item => `<span class="bg-amber-500/20 text-amber-300 px-2 py-1 rounded">${item}</span>`).join(' ');
@@ -267,7 +271,7 @@
             }
         });
 
-        // 監聽所有玩家即時戰況 (給主持人看)
+        // 監聽玩家即時榜
         const playersRef = ref(db, 'players');
         onValue(playersRef, (snapshot) => {
             const playersData = snapshot.val();
@@ -292,9 +296,8 @@
             });
         });
 
-        // 主持人控制功能
+        // 主持人功能
         window.hostCallNext = function() {
-            // 從所有題目中隨機挑選一個還沒被叫過的
             const remaining = ALL_ITEMS.filter(item => !calledList.includes(item));
             if (remaining.length === 0) {
                 alert('所有項目都已經叫完了！');
