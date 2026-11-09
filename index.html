@@ -7,7 +7,7 @@
     <!-- 網頁標題與群組預覽縮圖設定 -->
     <title>籐鼎通訊處 2026 賓果大賽</title>
     <meta property="og:title" content="籐鼎通訊處 2026 賓果大賽">
-    <meta property="og:description" content="EANT-52MD 騰鼎通訊處線上即時派對賓果遊戲，快來連線拿大獎！">
+    <meta property="og:description" content="EANT-52MD 籐鼎通訊處線上即時派對賓果遊戲，快來連線拿大獎！">
     <meta property="og:type" content="website">
 
     <script src="https://cdn.tailwindcss.com"></script>
@@ -396,11 +396,8 @@
                 return;
             }
             const randomItem = remaining[Math.floor(Math.random() * remaining.length)];
-            calledList.push(currentCardId); // 修正變數
-            calledList.push(randomItem);
-
-            // 確保不重複推入 (保留原本陣列邏輯)
-            calledList.pop(); // 移除剛多按的
+            
+            // 修正處：直接正確推入抽到的題目，不再有多餘的錯誤變數
             calledList.push(randomItem);
 
             set(ref(db, 'gameState'), {
