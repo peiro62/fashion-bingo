@@ -67,7 +67,7 @@
             <div id="card-container" class="bg-slate-900 p-3 sm:p-4 rounded-2xl border border-slate-800 shadow-2xl transition-all duration-300">
                 <div class="flex justify-between items-center mb-3">
                     <h3 id="card-title" class="font-bold text-amber-300 text-sm">卡片 #1</h3>
-                    <span class="text-xs text-slate-400">點擊格子劃記（中心為 FREE）</span>
+                    <span class="text-xs text-slate-400">點擊格子劃記（一經勾選無法取消）</span>
                 </div>
                 <div id="bingo-grid" class="grid grid-cols-5 gap-1.5 sm:gap-2">
                     <!-- 動態生成 25 格 -->
@@ -92,15 +92,15 @@
                 </div>
             </div>
 
-            <!-- 即時玩家戰況看板 -->
+            <!-- 即時玩家戰況排行榜 -->
             <div class="bg-slate-900 p-5 rounded-2xl border border-slate-800 shadow-xl flex flex-col gap-3">
-                <h3 class="font-bold text-amber-300 text-sm">🏆 現場玩家即時戰況排行榜</h3>
+                <h3 class="font-bold text-amber-300 text-sm">🏆 現場玩家即時戰況排行榜（即時置頂）</h3>
                 <div class="overflow-x-auto">
                     <table class="w-full text-left text-xs text-slate-300">
                         <thead class="border-b border-slate-800 text-slate-400">
                             <tr>
-                                <th class="pb-2">玩家暱稱</th>
-                                <th class="pb-2">卡片編號</th>
+                                <th class="pb-2">排名 / 玩家</th>
+                                <th class="pb-2">卡片</th>
                                 <th class="pb-2">達成連線</th>
                                 <th class="pb-2">狀態</th>
                             </tr>
@@ -165,7 +165,8 @@
         let myMarks = Array(25).fill(false);
         myMarks[12] = true;
         let calledList = [];
-        let confirmedLines = 0; // 確實已計算並放過煙火的連線數基準
+        let confirmedLines = 0;
+        let firstLineTimestamp = 0; // 記錄第一次達成連線的時間
 
         window.checkHostPassword = function() {
             const pwd = prompt("請輸入主持人管理密碼：");
@@ -207,6 +208,7 @@
             myMarks = Array(25).fill(false);
             myMarks[12] = true;
             confirmedLines = 0;
+            firstLineTimestamp = 0;
 
             document.getElementById('user-status').innerText = `玩家：${name} (卡片 #${cardId})`;
             switchView('player');
@@ -225,23 +227,26 @@
                 const isMarked = myMarks[index];
                 const isFree = index === 12;
 
-                if (isFree) {
-                    cell.className = `bingo-cell h-16 sm:h-20 rounded-xl p-1.5 sm:p-2 flex items-center justify-center text-center text-[10px] sm:text-xs font-black cursor-pointer border select-none bg-gradient-to-br from-yellow-400 to-amber-600 text-slate-950 border-amber-300 shadow-md`;
-                } else if (isMarked) {
-                    cell.className = `bingo-cell h-16 sm:h-20 rounded-xl p-1.5 sm:p-2 flex items-center justify-center text-center text-[11px] sm:text-xs font-black cursor-pointer border select-none bg-amber-500 text-slate-950 border-amber-300 shadow-lg scale-[1.02]`;
+                if (isFree || isMarked) {
+                    // 已劃記或中心格：鎖定狀態，點擊無效（不可取消）
+                    cell.className = `bingo-cell h-16 sm:h-20 rounded-xl p-1.5 sm:p-2 flex items-center justify-center text-center text-[11px] sm:text-xs font-black border select-none bg-amber-500 text-slate-950 border-amber-300 shadow-lg scale-[1.02] cursor-default`;
                 } else {
+                    // 未劃記：允許點擊
                     cell.className = `bingo-cell h-16 sm:h-20 rounded-xl p-1.5 sm:p-2 flex items-center justify-center text-center text-[11px] sm:text-xs font-bold cursor-pointer border select-none bg-slate-950 text-slate-200 border-slate-800 hover:border-slate-600`;
+                    cell.onclick = () => toggleMark(index);
                 }
 
                 cell.innerText = item;
-                cell.onclick = () => toggleMark(index);
                 grid.appendChild(cell);
             });
             calculateLines();
         }
 
         function toggleMark(index) {
-            myMarks[index] = !myMarks[index];
+            // 核心修改：如果是中心格或已經勾選過的格子，直接不允許取消
+            if (index === 12 || myMarks[index]) return;
+
+            myMarks[index] = true; // 只能設為 true，不能反轉變 false
             renderCard();
             updatePlayerStateToFirebase();
         }
@@ -268,7 +273,11 @@
                 banner.innerText = `🎉 太神啦！已成功達成 ${lines} 條線！ 🎉`;
                 cardContainer.classList.add('border-emerald-500', 'shadow-[0_0_30px_rgba(16,185,129,0.3)]');
                 
-                // 核心修正：只要當前連線數大於已確認的連線數，就立刻放煙火並更新基準
+                // 紀錄首次達成連線的時間戳記（用來排序排行）
+                if (firstLineTimestamp === 0) {
+                    firstLineTimestamp = Date.now();
+                }
+
                 if (lines > confirmedLines) {
                     triggerFireworks();
                     confirmedLines = lines;
@@ -277,6 +286,7 @@
                 banner.classList.add('hidden');
                 cardContainer.classList.remove('border-emerald-500', 'shadow-[0_0_30px_rgba(16,185,129,0.3)]');
                 confirmedLines = 0;
+                firstLineTimestamp = 0;
             }
 
             return lines;
@@ -299,6 +309,7 @@
                 cardId: currentCardId,
                 lines: lines,
                 bingo: lines >= 3,
+                firstLineTime: firstLineTimestamp || Date.now(),
                 lastUpdate: Date.now()
             });
         }
@@ -335,13 +346,31 @@
                 return;
             }
 
-            Object.values(playersData).forEach(p => {
+            // 轉換為陣列並進行智慧排序：
+            // 1. 優先比對「連線數」由多到少
+            // 2. 若連線數相同，優先比對「達成時間」由早到晚（最快達標的排在最前面）
+            let playersArray = Object.values(playersData);
+            playersArray.sort((a, b) => {
+                if (b.lines !== a.lines) {
+                    return b.lines - a.lines; // 條線多的在前
+                }
+                return (a.firstLineTime || a.lastUpdate) - (b.firstLineTime || b.lastUpdate); // 達成時間早的在前
+            });
+
+            playersArray.forEach((p, index) => {
                 const tr = document.createElement('tr');
                 tr.className = "border-b border-slate-800 hover:bg-slate-800/50";
+                
+                // 前三名加上特殊獎牌圖示
+                let rankBadge = `#${index + 1}`;
+                if (index === 0) rankBadge = '🥇';
+                else if (index === 1) rankBadge = '🥈';
+                else if (index === 2) rankBadge = '🥉';
+
                 tr.innerHTML = `
-                    <td class="py-2.5 font-bold text-white">${p.name}</td>
+                    <td class="py-2.5 font-bold text-white"><span class="mr-1.5 text-amber-400">${rankBadge}</span> ${p.name}</td>
                     <td class="py-2.5">#${p.cardId}</td>
-                    <td class="py-2.5 text-amber-400 font-bold">${p.lines} 條線</td>
+                    <td class="py-2.5 text-emerald-400 font-black">${p.lines} 條線</td>
                     <td class="py-2.5">${p.bingo ? '<span class="bg-emerald-500/20 text-emerald-300 px-2 py-0.5 rounded text-[10px] font-bold border border-emerald-500/30">🎉 BINGO!</span>' : '<span class="text-slate-500">進行中</span>'}</td>
                 `;
                 tbody.appendChild(tr);
