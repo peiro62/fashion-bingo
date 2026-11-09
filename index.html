@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>EANT-52MD 時尚穿搭派對賓果 (5x5)</title>
+    <title>EANT-52MD 騰鼎通訊處賓果大挑戰</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- 引入煙火特效專用套件 confetti-js -->
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
@@ -18,7 +18,7 @@
     <!-- 頂部導航與模式切換 -->
     <header class="w-full max-w-2xl flex justify-between items-center bg-slate-900/90 backdrop-blur p-4 rounded-2xl shadow-xl mb-4 border border-slate-800">
         <div>
-            <h1 class="text-xl font-bold text-amber-400 tracking-wider">✨ 時尚派對賓果 (5x5)</h1>
+            <h1 class="text-xl font-bold text-amber-400 tracking-wider">✨ 騰鼎通訊處賓果大挑戰</h1>
             <p id="user-status" class="text-xs text-slate-400 mt-0.5">尚未加入遊戲</p>
         </div>
         <div class="flex gap-2">
@@ -116,7 +116,7 @@
     </main>
 
     <footer class="w-full text-center text-xs text-slate-600 mt-6">
-        EANT-52MD Fashion Bingo Party &copy; 2026
+        EANT-52MD 騰鼎通訊處 &copy; 2026
     </footer>
 
     <!-- Firebase SDKs -->
@@ -165,7 +165,7 @@
         let myMarks = Array(25).fill(false);
         myMarks[12] = true;
         let calledList = [];
-        let previousLines = 0; // 記錄上一次的連線數，用來判斷是否新增連線
+        let confirmedLines = 0; // 確實已計算並放過煙火的連線數基準
 
         window.checkHostPassword = function() {
             const pwd = prompt("請輸入主持人管理密碼：");
@@ -206,7 +206,7 @@
             currentCardId = cardId;
             myMarks = Array(25).fill(false);
             myMarks[12] = true;
-            previousLines = 0;
+            confirmedLines = 0;
 
             document.getElementById('user-status').innerText = `玩家：${name} (卡片 #${cardId})`;
             switchView('player');
@@ -263,29 +263,29 @@
             const banner = document.getElementById('bingo-banner');
             const cardContainer = document.getElementById('card-container');
 
-            // 只要連線數大於 0 就顯示祝賀區與綠色發光邊框
             if (lines > 0) {
                 banner.classList.remove('hidden');
                 banner.innerText = `🎉 太神啦！已成功達成 ${lines} 條線！ 🎉`;
                 cardContainer.classList.add('border-emerald-500', 'shadow-[0_0_30px_rgba(16,185,129,0.3)]');
                 
-                // 只要連線數增加（每多達成一條線），就立刻放一次煙火！
-                if (lines > previousLines) {
+                // 核心修正：只要當前連線數大於已確認的連線數，就立刻放煙火並更新基準
+                if (lines > confirmedLines) {
                     triggerFireworks();
+                    confirmedLines = lines;
                 }
             } else {
                 banner.classList.add('hidden');
                 cardContainer.classList.remove('border-emerald-500', 'shadow-[0_0_30px_rgba(16,185,129,0.3)]');
+                confirmedLines = 0;
             }
 
-            previousLines = lines;
             return lines;
         }
 
         function triggerFireworks() {
             confetti({
-                particleCount: 80,
-                spread: 70,
+                particleCount: 100,
+                spread: 80,
                 origin: { y: 0.6 }
             });
         }
@@ -298,7 +298,7 @@
                 name: currentUser,
                 cardId: currentCardId,
                 lines: lines,
-                bingo: lines >= 3, // 3條線以上保持在管理員後台顯示 BINGO 徽章
+                bingo: lines >= 3,
                 lastUpdate: Date.now()
             });
         }
