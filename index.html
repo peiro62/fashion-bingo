@@ -3,566 +3,314 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>時尚派對 90卡賓果遊戲 (Set EANT-52MD)</title>
-    <!-- Tailwind CSS CDN -->
+    <title>EANT-52MD 時尚穿搭派對賓果</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Canvas Confetti for Celebration Effects -->
-    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
-    <!-- Font Awesome Icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Google Fonts: Playfair Display & Montserrat -->
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,600;0,800;1,400&display=swap" rel="stylesheet">
-    
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    fontFamily: {
-                        serif: ['Playfair Display', 'serif'],
-                        sans: ['Montserrat', 'sans-serif'],
-                    },
-                    colors: {
-                        fashion: {
-                            gold: '#D4AF37',
-                            rose: '#E8C5C8',
-                            roseDark: '#C48B90',
-                            dark: '#121212',
-                            card: '#1A1A1A',
-                            accent: '#F3E5AB'
-                        }
-                    }
-                }
-            }
-        }
-    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
     <style>
-        body {
-            background: radial-gradient(circle at top center, #2c2428 0%, #121212 70%);
-            min-height: 100vh;
-            color: #f3f4f6;
-            user-select: none;
-        }
-
-        .gold-gradient-text {
-            background: linear-gradient(135deg, #FFF6D5 0%, #D4AF37 50%, #AA7C11 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-
-        .gold-border {
-            border: 1px solid rgba(212, 175, 55, 0.4);
-        }
-
-        .card-shadow {
-            box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.8), 0 0 15px rgba(212, 175, 55, 0.15);
-        }
-
-        .tile-active {
-            background: linear-gradient(135deg, rgba(232, 197, 200, 0.25) 0%, rgba(212, 175, 55, 0.3) 100%) !important;
-            border-color: #D4AF37 !important;
-            box-shadow: inset 0 0 12px rgba(212, 175, 55, 0.5), 0 0 10px rgba(212, 175, 55, 0.3);
-            transform: scale(0.97);
-        }
-
-        .tile-winning {
-            animation: pulse-gold 1.5s infinite alternate;
-        }
-
-        @keyframes pulse-gold {
-            0% { box-shadow: inset 0 0 15px #D4AF37, 0 0 10px #D4AF37; border-color: #FFF6D5; }
-            100% { box-shadow: inset 0 0 25px #FFF6D5, 0 0 20px #D4AF37; border-color: #D4AF37; }
-        }
-
-        .stamp-mark {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%) rotate(-12deg);
-            pointer-events: none;
-            opacity: 0.85;
-            animation: stamp-pop 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        }
-
-        @keyframes stamp-pop {
-            0% { transform: translate(-50%, -50%) scale(2) rotate(0deg); opacity: 0; }
-            100% { transform: translate(-50%, -50%) scale(1) rotate(-12deg); opacity: 0.85; }
-        }
-
-        .btn-shimmer {
-            background: linear-gradient(90deg, #D4AF37 0%, #FFF6D5 50%, #D4AF37 100%);
-            background-size: 200% auto;
-            transition: 0.3s;
-        }
-        .btn-shimmer:hover {
-            background-position: right center;
-        }
-
-        .glass-tab {
-            background: rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
+        body { font-family: 'Noto Sans TC', sans-serif; background-color: #f8fafc; }
+        .bingo-cell { transition: all 0.2s ease; }
     </style>
 </head>
-<body class="font-sans pb-12 flex flex-col justify-between items-center">
+<body class="bg-slate-900 text-slate-100 min-h-screen flex flex-col items-center justify-between p-4">
 
-    <!-- Header Section -->
-    <header class="w-full max-w-2xl px-4 pt-6 pb-4 text-center">
-        <div class="inline-block px-3 py-1 mb-2 rounded-full border border-fashion-roseDark/40 bg-fashion-rose/10 text-xs tracking-widest text-fashion-rose font-semibold uppercase">
-            Set EANT-52MD • 90 Cards Edition
+    <!-- 頂部導航與模式切換 -->
+    <header class="w-full max-w-2xl flex justify-between items-center bg-slate-800 p-4 rounded-2xl shadow-lg mb-4 border border-slate-700">
+        <div>
+            <h1 class="text-xl font-bold text-amber-400 tracking-wider">✨ 時尚派對賓果</h1>
+            <p id="user-status" class="text-xs text-slate-400 mt-0.5">尚未加入遊戲</p>
         </div>
-        <h1 class="font-serif text-3xl sm:text-4xl font-extrabold gold-gradient-text tracking-wider uppercase mb-1">
-            時尚派對 BINGO
-        </h1>
-        <p class="text-xs sm:text-sm text-gray-400 font-light">輸入卡片編號（1-90）即可載入專屬賓果卡</p>
-
-        <!-- Mode Switcher Tabs -->
-        <div class="flex justify-center gap-2 mt-5 p-1 rounded-full glass-tab max-w-xs mx-auto">
-            <button id="tab-player" onclick="switchMode('player')" class="flex-1 py-2 rounded-full text-xs sm:text-sm font-semibold transition-all duration-300 bg-fashion-gold text-black shadow-md">
-                <i class="fa-solid font-bold fa-user mr-1.5"></i>玩家賓果卡
-            </button>
-            <button id="tab-host" onclick="switchMode('host')" class="flex-1 py-2 rounded-full text-xs sm:text-sm font-semibold transition-all duration-300 text-gray-300 hover:text-white">
-                <i class="fa-solid fa-bullhorn mr-1.5"></i>主持人叫號盤
-            </button>
+        <div class="flex gap-2">
+            <button onclick="switchView('player')" id="btn-player" class="px-3 py-1.5 rounded-xl text-sm font-bold bg-amber-500 text-slate-950 transition">玩家模式</button>
+            <button onclick="switchView('host')" id="btn-host" class="px-3 py-1.5 rounded-xl text-sm font-bold bg-slate-700 text-slate-300 transition">主持人管理室</button>
         </div>
     </header>
 
-    <!-- Main Container -->
-    <main class="w-full max-w-lg px-3 sm:px-4 flex-1">
+    <!-- 主要內容區 -->
+    <main class="w-full max-w-2xl flex-1 flex flex-col gap-4">
 
-        <!-- ================= PLAYER VIEW ================= -->
-        <div id="player-view" class="space-y-4">
-            
-            <!-- Card Selector Bar -->
-            <div class="bg-fashion-card border gold-border rounded-xl p-3 sm:p-4 card-shadow flex items-center justify-between gap-3">
-                <div class="flex items-center gap-2">
-                    <label for="card-num-input" class="text-xs font-bold text-gray-300 uppercase">卡片編號:</label>
-                    <div class="relative w-24">
-                        <input type="number" id="card-num-input" min="1" max="90" value="1" 
-                            class="w-full bg-neutral-900 border gold-border rounded-lg px-3 py-1.5 text-center text-fashion-gold font-bold font-serif text-lg focus:outline-none focus:ring-1 focus:ring-fashion-gold"
-                            onchange="loadSpecificCard()" onkeypress="if(event.key==='Enter') loadSpecificCard()">
-                    </div>
-                    <span class="text-xs text-gray-400">/ 90</span>
-                </div>
-
-                <div class="flex gap-1">
-                    <button onclick="changeCardNumber(-1)" class="px-3 py-1.5 bg-neutral-800 hover:bg-neutral-700 border border-gray-700 rounded-lg text-xs font-bold text-gray-200 transition">
-                        <i class="fa-solid fa-chevron-left"></i> 上一張
-                    </button>
-                    <button onclick="changeCardNumber(1)" class="px-3 py-1.5 bg-neutral-800 hover:bg-neutral-700 border border-gray-700 rounded-lg text-xs font-bold text-gray-200 transition">
-                        下一張 <i class="fa-solid fa-chevron-right"></i>
-                    </button>
-                </div>
+        <!-- 玩家登入與卡片選擇區 -->
+        <div id="view-login" class="bg-slate-800 p-6 rounded-2xl border border-slate-700 shadow-xl flex flex-col gap-4">
+            <h2 class="text-lg font-bold text-amber-300">加入遊戲</h2>
+            <div>
+                <label class="block text-sm text-slate-300 mb-1">你的名字 / 暱稱：</label>
+                <input type="text" id="input-name" placeholder="例如：Fashion小香" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:border-amber-400">
             </div>
+            <div>
+                <label class="block text-sm text-slate-300 mb-1">選擇賓果卡編號 (1 - 90)：</label>
+                <input type="number" id="input-card-id" min="1" max="90" value="1" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:border-amber-400">
+            </div>
+            <button onclick="joinGame()" class="w-full bg-gradient-to-r from-amber-500 to-yellow-500 text-slate-950 font-bold py-3 rounded-xl shadow-lg hover:brightness-115 transition">進入賓果派對</button>
+        </div>
 
-            <!-- Game Status & Score Board -->
-            <div class="bg-fashion-card border gold-border rounded-xl p-3 sm:p-4 card-shadow flex justify-between items-center">
+        <!-- 玩家遊戲面板 -->
+        <div id="view-player" class="hidden flex flex-col gap-4">
+            <!-- 最新叫號提示卡 -->
+            <div class="bg-gradient-to-r from-amber-600/30 to-yellow-600/30 border border-amber-500/50 p-4 rounded-2xl flex items-center justify-between shadow-lg">
                 <div>
-                    <div class="text-xs text-gray-400">目前連線數</div>
-                    <div class="text-2xl font-serif font-bold text-fashion-gold flex items-baseline gap-1">
-                        <span id="line-count">0</span> <span class="text-xs font-sans text-gray-400 font-normal">條線</span>
-                    </div>
+                    <span class="text-xs text-amber-300 font-bold tracking-widest uppercase">主持人最新叫號</span>
+                    <div id="current-called-display" class="text-2xl font-black text-amber-400 mt-0.5">等待主持人開牌...</div>
                 </div>
-                
-                <div id="bingo-status-badge" class="px-3 py-1.5 rounded-lg bg-gray-800 border border-gray-700 text-xs text-gray-400 font-semibold tracking-wide">
-                    尚未連線
-                </div>
-
-                <button onclick="resetCurrentCardMarks()" class="px-3 py-2 text-xs font-semibold rounded-lg bg-red-950/40 text-fashion-rose hover:bg-red-900/60 border border-fashion-roseDark/30 transition flex items-center gap-1.5">
-                    <i class="fa-solid fa-arrows-rotate"></i> 重置標記
-                </button>
-            </div>
-
-            <!-- 5x5 Bingo Grid -->
-            <div class="bg-fashion-card border gold-border p-2 sm:p-3 rounded-2xl card-shadow">
-                <div id="bingo-grid" class="grid grid-cols-5 gap-1.5 sm:gap-2 aspect-square w-full">
-                    <!-- 25 Cells rendered dynamically via JS -->
+                <div class="text-right">
+                    <span class="text-xs text-slate-400">當前連線數</span>
+                    <div id="player-lines-count" class="text-2xl font-black text-emerald-400">0 條線</div>
                 </div>
             </div>
 
-            <!-- Card Footer Note -->
-            <div class="text-center text-[11px] text-gray-500 font-light flex items-center justify-center gap-2">
-                <span><i class="fa-solid fa-hand-pointer text-fashion-gold/70 mr-1"></i>點擊方格標記符合的穿搭元素</span>
+            <!-- 賓果卡片本體 (4x4) -->
+            <div class="bg-slate-800 p-4 rounded-2xl border border-slate-700 shadow-2xl">
+                <div class="flex justify-between items-center mb-3">
+                    <h3 id="card-title" class="font-bold text-amber-300 text-sm">卡片 #1</h3>
+                    <span class="text-xs text-slate-400">點擊格子即可劃記</span>
+                </div>
+                <div id="bingo-grid" class="grid grid-cols-4 gap-2">
+                    <!-- 动态生成格子 -->
+                </div>
             </div>
         </div>
 
-        <!-- ================= HOST / CALLER VIEW ================= -->
-        <div id="host-view" class="hidden space-y-5">
-            
-            <!-- Drawn Item Showcase Box -->
-            <div class="bg-fashion-card border gold-border rounded-2xl p-6 text-center card-shadow relative overflow-hidden">
-                <div class="text-xs font-semibold text-fashion-gold tracking-widest uppercase mb-2">當前叫號項</div>
-                
-                <div id="current-drawn-display" class="h-28 flex items-center justify-center my-2">
-                    <span class="text-xl sm:text-2xl font-serif font-bold text-gray-500 italic">點擊下方按鈕隨機抽號，或直接點選下方清單</span>
+        <!-- 主持人管理室 -->
+        <div id="view-host" class="hidden flex flex-col gap-4">
+            <div class="bg-slate-800 p-5 rounded-2xl border border-slate-700 shadow-xl flex flex-col gap-4">
+                <h2 class="text-lg font-bold text-amber-400">主持人控制台</h2>
+                <div class="flex gap-2">
+                    <button onclick="hostCallNext()" class="flex-1 bg-amber-500 text-slate-950 font-bold py-3 rounded-xl shadow hover:bg-amber-400 transition">🎲 隨機叫出下一題/號</button>
+                    <button onclick="hostResetGame()" class="px-4 bg-rose-600/20 text-rose-400 border border-rose-500/30 font-bold py-3 rounded-xl hover:bg-rose-600/30 transition">重置遊戲</button>
                 </div>
-
-                <div class="pt-2 flex justify-center gap-3">
-                    <button id="draw-btn" onclick="drawNextItem()" class="btn-shimmer text-black font-bold px-6 py-3 rounded-full text-sm shadow-lg hover:scale-105 active:scale-95 transition flex items-center gap-2">
-                        <i class="fa-solid fa-dice"></i> 隨機抽號
-                    </button>
-                    <button onclick="resetHostGame()" class="px-4 py-3 text-xs font-medium rounded-full bg-gray-800 text-gray-300 hover:bg-gray-700 border border-gray-600 transition">
-                        重置叫號
-                    </button>
+                <div>
+                    <span class="text-xs text-slate-400">已叫過的項目/號碼紀錄：</span>
+                    <div id="host-called-history" class="flex flex-wrap gap-1.5 mt-2 max-h-28 overflow-y-auto p-2 bg-slate-900 rounded-xl border border-slate-800 text-xs text-slate-300">
+                        無
+                    </div>
                 </div>
             </div>
 
-            <!-- Drawn Progress Summary -->
-            <div class="bg-fashion-card border border-gray-800 rounded-xl p-4">
-                <div class="flex justify-between items-center mb-3">
-                    <h3 class="text-xs font-bold text-gray-300 uppercase tracking-wider">叫號單總覽 (<span id="drawn-count">0</span>/24)</h3>
-                    <span id="draw-progress-text" class="text-xs text-fashion-gold">點擊項目可手動開出/取消</span>
-                </div>
-
-                <!-- Call List Grid (All 24 Items) -->
-                <div id="host-items-list" class="grid grid-cols-3 sm:grid-cols-4 gap-2 max-h-72 overflow-y-auto pr-1">
-                    <!-- Host items list populated by JS -->
+            <!-- 即時玩家戰況看板 -->
+            <div class="bg-slate-800 p-5 rounded-2xl border border-slate-700 shadow-xl flex flex-col gap-3">
+                <h3 class="font-bold text-amber-300 text-sm">🏆 現場玩家即時戰況排行榜</h3>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-xs text-slate-300">
+                        <thead class="border-b border-slate-700 text-slate-400">
+                            <tr>
+                                <th class="pb-2">玩家暱稱</th>
+                                <th class="pb-2">卡片編號</th>
+                                <th class="pb-2">達成連線</th>
+                                <th class="pb-2">狀態</th>
+                            </tr>
+                        </thead>
+                        <tbody id="host-players-list">
+                            <tr><td colspan="4" class="py-3 text-center text-slate-500">目前尚無玩家連線</td></tr>
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>
 
     </main>
 
-    <!-- Footer Information -->
-    <footer class="mt-8 text-center text-xs text-gray-600 font-light">
-        <p>Fashion Party Bingo Game System &copy; 2026 (Set EANT-52MD)</p>
+    <footer class="w-full text-center text-xs text-slate-500 mt-6">
+        EANT-52MD Fashion Bingo Party &copy; 2026
     </footer>
 
-    <!-- Game Logic JavaScript -->
-    <script>
-        // Full Pool of 24 Fashion & Number Items from Caller Sheet
-        const BINGO_ITEMS = [
-            "墨鏡", "頭巾/絲巾", "帽子/項鍊", "手鍊/戒指", 
-            "耳環/耳骨夾", "腰鏈/皮帶/金屬扣環", "胸針/別針", "格紋/豹紋", 
-            "香奈兒元素", "Oversize", "丹寧牛仔", "雛菊元素", 
-            "撞色/特殊色", "皮革單品", 
-            "1", "2", "3", "5", "6", "7", "8", "9", "10", "11"
-        ];
+    <!-- Firebase SDKs -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getDatabase, ref, set, get, onValue, update } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
-        const FREE_TILE_TEXT = "【FREE】\nGD & Jennie";
-
-        // State Management
-        let currentCardIndex = 1;
-        let playerMarkedStates = {}; // key: cardNum (1-90), value: array of 25 booleans
-        let drawnItems = [];
-
-        // Seeded pseudo-random generator to guarantee 90 unique deterministic cards for Card 1 to 90
-        function getCardItems(cardNum) {
-            // Use cardNum as seed to shuffle BINGO_ITEMS uniquely for each card
-            let items = [...BINGO_ITEMS];
-            let seed = cardNum * 1337 + 42;
-            
-            // Fisher-Yates shuffle with custom LCG seed
-            for (let i = items.length - 1; i > 0; i--) {
-                seed = (seed * 9301 + 49297) % 233280;
-                let rnd = seed / 233280;
-                let j = Math.floor(rnd * (i + 1));
-                [items[i], items[j]] = [items[j], items[i]];
-            }
-
-            let board = [];
-            let itemIdx = 0;
-            for (let i = 0; i < 25; i++) {
-                if (i === 12) {
-                    board.push(FREE_TILE_TEXT);
-                } else {
-                    board.push(items[itemIdx]);
-                    itemIdx++;
-                }
-            }
-            return board;
-        }
-
-        // Initialize App on Page Load
-        window.onload = function() {
-            // Initialize marked states for all 90 cards
-            for (let i = 1; i <= 90; i++) {
-                let marks = Array(25).fill(false);
-                marks[12] = true; // FREE center space always marked
-                playerMarkedStates[i] = marks;
-            }
-            loadCard(1);
-            initHostView();
+        // 你的專屬 Firebase 配置
+        const firebaseConfig = {
+            apiKey: "AIzaSyC0D5jcL3P0v6twKi1FYouKZY7fxEc2OnU",
+            authDomain: "fashion-bingo-f6326.firebaseapp.com",
+            databaseURL: "https://fashion-bingo-f6326-default-rtdb.firebaseio.com",
+            projectId: "fashion-bingo-f6326",
+            storageBucket: "fashion-bingo-f6326.firebasestorage.app",
+            messagingSenderId: "540454221392",
+            appId: "1:540454221392:web:717256afb39c0d94478355",
+            measurementId: "G-Y5VV76ZWXZ"
         };
 
-        // Switch between Player and Host tabs
-        function switchMode(mode) {
-            const playerView = document.getElementById('player-view');
-            const hostView = document.getElementById('host-view');
-            const tabPlayer = document.getElementById('tab-player');
-            const tabHost = document.getElementById('tab-host');
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
 
-            if (mode === 'player') {
-                playerView.classList.remove('hidden');
-                hostView.classList.add('hidden');
-                tabPlayer.className = "flex-1 py-2 rounded-full text-xs sm:text-sm font-semibold transition-all duration-300 bg-fashion-gold text-black shadow-md";
-                tabHost.className = "flex-1 py-2 rounded-full text-xs sm:text-sm font-semibold transition-all duration-300 text-gray-300 hover:text-white";
-            } else {
-                playerView.classList.add('hidden');
-                hostView.classList.remove('hidden');
-                tabHost.className = "flex-1 py-2 rounded-full text-xs sm:text-sm font-semibold transition-all duration-300 bg-fashion-gold text-black shadow-md";
-                tabPlayer.className = "flex-1 py-2 rounded-full text-xs sm:text-sm font-semibold transition-all duration-300 text-gray-300 hover:text-white";
+        // 90張卡片的資料庫模擬與項目清單
+        const ALL_ITEMS = [
+            "墨鏡", "頭巾/絲巾", "帽子/項鍊", "手鍊/戒指",
+            "耳環/耳骨夾", "腰鏈/皮帶/金屬扣環", "胸針/別針", "格紋/豹紋",
+            "香奈兒元素", "Oversize", "丹寧牛仔", "雛菊元素",
+            "撞色/特殊色", "皮革單品", "1", "2", "3", "5", "6", "7", "8", "9", "10", "11", "【FREE GD & Jennie】"
+        ];
+
+        // 產生 90 張卡片內容的偽隨機生成器（根據編號固定排列）
+        function getCardItems(cardId) {
+            let items = [...ALL_ITEMS];
+            // 簡單用編號當種子洗牌
+            let seed = cardId;
+            for (let i = items.length - 1; i > 0; i--) {
+                seed = (seed * 9301 + 49297) % 233280;
+                let j = Math.floor((seed / 233280) * (i + 1));
+                [items[i], items[j]] = [items[j], items[i]];
             }
+            // 確保每次固定取 16 格 (4x4)
+            return items.slice(0, 16);
         }
 
-        /* ================= PLAYER LOGIC ================= */
+        let currentUser = null;
+        let currentCardId = 1;
+        let myMarks = Array(16).fill(false);
+        let calledList = [];
 
-        function loadSpecificCard() {
-            const input = document.getElementById('card-num-input');
-            let val = parseInt(input.value);
-            if (isNaN(val) || val < 1) val = 1;
-            if (val > 90) val = 90;
-            input.value = val;
-            loadCard(val);
-        }
+        window.switchView = function(view) {
+            document.getElementById('view-login').classList.add('hidden');
+            document.getElementById('view-player').classList.add('hidden');
+            document.getElementById('view-host').classList.add('hidden');
+            document.getElementById('btn-player').className = "px-3 py-1.5 rounded-xl text-sm font-bold bg-slate-700 text-slate-300 transition";
+            document.getElementById('btn-host').className = "px-3 py-1.5 rounded-xl text-sm font-bold bg-slate-700 text-slate-300 transition";
 
-        function changeCardNumber(delta) {
-            let nextNum = currentCardIndex + delta;
-            if (nextNum < 1) nextNum = 90;
-            if (nextNum > 90) nextNum = 1;
-            document.getElementById('card-num-input').value = nextNum;
-            loadCard(nextNum);
-        }
-
-        function loadCard(cardNum) {
-            currentCardIndex = cardNum;
-            renderPlayerGrid();
-            checkBingoLines();
-        }
-
-        function resetCurrentCardMarks() {
-            let marks = Array(25).fill(false);
-            marks[12] = true;
-            playerMarkedStates[currentCardIndex] = marks;
-            renderPlayerGrid();
-            checkBingoLines();
-        }
-
-        function renderPlayerGrid() {
-            const gridEl = document.getElementById('bingo-grid');
-            gridEl.innerHTML = '';
-
-            const boardItems = getCardItems(currentCardIndex);
-            const marks = playerMarkedStates[currentCardIndex];
-
-            // Calculate winning lines to highlight
-            const winPatterns = getWinningLineIndices(marks);
-            const winningIndices = new Set(winPatterns.flat());
-
-            boardItems.forEach((itemText, idx) => {
-                const cell = document.createElement('div');
-                const isMarked = marks[idx];
-                const isFree = idx === 12;
-                const isWinningTile = winningIndices.has(idx);
-
-                let baseStyle = "relative flex flex-col items-center justify-center text-center p-1 rounded-xl border text-[11px] sm:text-xs font-medium cursor-pointer transition-all duration-200 select-none overflow-hidden aspect-square ";
-                
-                if (isWinningTile) {
-                    baseStyle += "tile-active tile-winning border-fashion-gold ";
-                } else if (isMarked) {
-                    baseStyle += "tile-active border-fashion-gold/60 ";
+            if (view === 'player') {
+                if (!currentUser) {
+                    document.getElementById('view-login').classList.remove('hidden');
                 } else {
-                    baseStyle += "bg-neutral-900/90 border-gray-800 text-gray-200 hover:border-gray-600 hover:bg-neutral-800 ";
+                    document.getElementById('view-player').classList.remove('hidden');
                 }
+                document.getElementById('btn-player').className = "px-3 py-1.5 rounded-xl text-sm font-bold bg-amber-500 text-slate-950 transition";
+            } else {
+                document.getElementById('view-host').classList.remove('hidden');
+                document.getElementById('btn-host').className = "px-3 py-1.5 rounded-xl text-sm font-bold bg-amber-500 text-slate-950 transition";
+            }
+        }
 
-                cell.className = baseStyle;
-                cell.onclick = () => toggleTileMark(idx);
+        window.joinGame = function() {
+            const name = document.getElementById('input-name').value.trim();
+            const cardId = parseInt(document.getElementById('input-card-id').value);
+            if (!name) { alert('請輸入你的名字！'); return; }
+            if (isNaN(cardId) || cardId < 1 || cardId > 90) { alert('卡片編號必須在 1 到 90 之間！'); return; }
 
-                const formattedText = itemText.replace('/', '/\n');
-                let contentHTML = `<span class="leading-tight whitespace-pre-line ${isFree ? 'font-serif font-bold text-fashion-gold text-[10px] sm:text-xs' : ''}">${formattedText}</span>`;
-                
-                if (isMarked && !isFree) {
-                    contentHTML += `
-                        <div class="stamp-mark text-fashion-roseDark/80">
-                            <i class="fa-solid fa-crown text-2xl sm:text-3xl drop-shadow"></i>
-                        </div>
-                    `;
-                } else if (isFree) {
-                    contentHTML += `
-                        <div class="mt-0.5 text-[8px] px-1 bg-fashion-gold/20 text-fashion-gold rounded-full font-sans">FREE</div>
-                    `;
-                }
+            currentUser = name;
+            currentCardId = cardId;
+            myMarks = Array(16).fill(false);
 
-                cell.innerHTML = contentHTML;
-                gridEl.appendChild(cell);
+            document.getElementById('user-status').innerText = `玩家：${name} (卡片 #${cardId})`;
+            switchView('player');
+            renderCard();
+            updatePlayerStateToFirebase();
+        }
+
+        function renderCard() {
+            const items = getCardItems(currentCardId);
+            document.getElementById('card-title').innerText = `卡片 #${currentCardId} (EANT-52MD)`;
+            const grid = document.getElementById('bingo-grid');
+            grid.innerHTML = '';
+
+            items.forEach((item, index) => {
+                const cell = document.createElement('div');
+                const isMarked = myMarks[index];
+                cell.className = `bingo-cell h-20 rounded-xl p-2 flex items-center justify-center text-center text-xs font-bold cursor-pointer border ${isMarked ? 'bg-amber-500 text-slate-950 border-amber-400 shadow-md' : 'bg-slate-900 text-slate-200 border-slate-700 hover:border-slate-500'}`;
+                cell.innerText = item;
+                cell.onclick = () => toggleMark(index);
+                grid.appendChild(cell);
             });
+            calculateLines();
         }
 
-        function toggleTileMark(idx) {
-            if (idx === 12) return; // FREE cell stays marked
-            let marks = playerMarkedStates[currentCardIndex];
-            marks[idx] = !marks[idx];
-            renderPlayerGrid();
-            checkBingoLines();
+        function toggleMark(index) {
+            myMarks[index] = !myMarks[index];
+            renderCard();
+            updatePlayerStateToFirebase();
         }
 
-        function getWinningLineIndices(marks) {
-            const lines = [];
+        function calculateLines() {
+            let lines = 0;
+            // 4x4 連線計算 (橫線 4 條, 直線 4 條, 對角線 2 條)
+            const winningCombos = [
+                [0,1,2,3], [4,5,6,7], [8,9,10,11], [12,13,14,15], // 橫
+                [0,4,8,12], [1,5,9,13], [2,6,10,14], [3,7,11,15], // 直
+                [0,5,10,15], [3,6,9,12] // 對角
+            ];
 
-            // Rows
-            for (let r = 0; r < 5; r++) {
-                const rowIndices = [r*5, r*5+1, r*5+2, r*5+3, r*5+4];
-                if (rowIndices.every(i => marks[i])) lines.push(rowIndices);
-            }
+            winningCombos.forEach(combo => {
+                if (combo.every(i => myMarks[i])) lines++;
+            });
 
-            // Columns
-            for (let c = 0; c < 5; c++) {
-                const colIndices = [c, c+5, c+10, c+15, c+20];
-                if (colIndices.every(i => marks[i])) lines.push(colIndices);
-            }
-
-            // Diagonals
-            const diag1 = [0, 6, 12, 18, 24];
-            if (diag1.every(i => marks[i])) lines.push(diag1);
-
-            const diag2 = [4, 8, 12, 16, 20];
-            if (diag2.every(i => marks[i])) lines.push(diag2);
-
+            document.getElementById('player-lines-count').innerText = `${lines} 條線`;
             return lines;
         }
 
-        let previousLineCounts = {};
-
-        function checkBingoLines() {
-            const marks = playerMarkedStates[currentCardIndex];
-            const winningLines = getWinningLineIndices(marks);
-            const newCount = winningLines.length;
-            const lineCountEl = document.getElementById('line-count');
-            const badgeEl = document.getElementById('bingo-status-badge');
-
-            lineCountEl.innerText = newCount;
-
-            let prevCount = previousLineCounts[currentCardIndex] || 0;
-            if (newCount > prevCount) {
-                triggerConfetti();
-            }
-            previousLineCounts[currentCardIndex] = newCount;
-
-            if (newCount >= 5) {
-                badgeEl.className = "px-3 py-1.5 rounded-lg bg-fashion-gold text-black font-bold text-xs shadow-lg animate-bounce";
-                badgeEl.innerText = "👑 SUPER BINGO!";
-            } else if (newCount >= 1) {
-                badgeEl.className = "px-3 py-1.5 rounded-lg bg-fashion-rose/20 border border-fashion-rose text-fashion-rose font-bold text-xs";
-                badgeEl.innerText = `✨ ${newCount} 線連成!`;
-            } else {
-                badgeEl.className = "px-3 py-1.5 rounded-lg bg-gray-800 border border-gray-700 text-xs text-gray-400 font-semibold";
-                badgeEl.innerText = "尚未連線";
-            }
-        }
-
-        function triggerConfetti() {
-            if (typeof confetti === 'function') {
-                confetti({
-                    particleCount: 70,
-                    spread: 60,
-                    origin: { y: 0.7 },
-                    colors: ['#D4AF37', '#E8C5C8', '#FFFFFF', '#FFD1DC']
-                });
-            }
-        }
-
-
-        /* ================= HOST / CALLER LOGIC ================= */
-
-        function initHostView() {
-            renderHostList();
-        }
-
-        function renderHostList() {
-            const container = document.getElementById('host-items-list');
-            container.innerHTML = '';
-
-            BINGO_ITEMS.forEach(item => {
-                const isDrawn = drawnItems.includes(item);
-                const chip = document.createElement('div');
-
-                let style = "p-2 rounded-lg text-center text-xs border font-medium transition-all flex items-center justify-center min-h-[44px] cursor-pointer hover:opacity-80 ";
-                if (isDrawn) {
-                    style += "bg-fashion-gold/20 border-fashion-gold text-fashion-gold font-bold shadow";
-                } else {
-                    style += "bg-neutral-900 border-gray-800 text-gray-400";
-                }
-
-                chip.className = style;
-                chip.innerText = item;
-                chip.onclick = () => toggleHostItem(item);
-                container.appendChild(chip);
+        function updatePlayerStateToFirebase() {
+            if (!currentUser) return;
+            const lines = calculateLines();
+            const playerRef = ref(db, 'players/' + currentUser.replace(/[.#$[\]]/g, '_'));
+            set(playerRef, {
+                name: currentUser,
+                cardId: currentCardId,
+                lines: lines,
+                bingo: lines >= 2, // 2條線以上算達標
+                lastUpdate: Date.now()
             });
-
-            document.getElementById('drawn-count').innerText = drawnItems.length;
         }
 
-        function toggleHostItem(item) {
-            const index = drawnItems.indexOf(item);
-            if (index > -1) {
-                drawnItems.splice(index, 1);
-            } else {
-                drawnItems.push(item);
-                triggerConfetti();
+        // 監聽 Firebase 遊戲全域狀態
+        const gameRef = ref(db, 'gameState');
+        onValue(gameRef, (snapshot) => {
+            const data = snapshot.val();
+            if (data) {
+                calledList = data.calledList || [];
+                // 更新玩家畫面中的最新叫號
+                const latest = calledList.length > 0 ? calledList[calledList.length - 1] : '尚未開牌';
+                document.getElementById('current-called-display').innerText = latest;
+
+                // 更新主持人歷史紀錄
+                const historyDiv = document.getElementById('host-called-history');
+                if (calledList.length > 0) {
+                    historyDiv.innerHTML = calledList.map(item => `<span class="bg-amber-500/20 text-amber-300 px-2 py-1 rounded">${item}</span>`).join(' ');
+                } else {
+                    historyDiv.innerHTML = '無';
+                }
             }
-            renderHostList();
-            document.getElementById('current-drawn-display').innerHTML = `
-                <span class="text-xs text-fashion-rose font-sans font-semibold tracking-wider block mb-1">CURRENTLY CALLED</span>
-                <span class="text-2xl sm:text-3xl font-serif font-extrabold text-fashion-gold drop-shadow-md">
-                    ${item}
-                </span>
-            `;
-        }
+        });
 
-        function drawNextItem() {
-            const remaining = BINGO_ITEMS.filter(item => !drawnItems.includes(item));
-            const btn = document.getElementById('draw-btn');
-            const display = document.getElementById('current-drawn-display');
+        // 監聽所有玩家即時戰況 (給主持人看)
+        const playersRef = ref(db, 'players');
+        onValue(playersRef, (snapshot) => {
+            const playersData = snapshot.val();
+            const tbody = document.getElementById('host-players-list');
+            tbody.innerHTML = '';
 
-            if (remaining.length === 0) {
-                alert("所有 24 個項目都已經叫號完畢！");
+            if (!playersData) {
+                tbody.innerHTML = `<tr><td colspan="4" class="py-3 text-center text-slate-500">目前尚無玩家連線</td></tr>`;
                 return;
             }
 
-            btn.disabled = true;
-            btn.classList.add('opacity-50');
+            Object.values(playersData).forEach(p => {
+                const tr = document.createElement('tr');
+                tr.className = "border-b border-slate-700/50 hover:bg-slate-700/20";
+                tr.innerHTML = `
+                    <td class="py-2.5 font-bold text-white">${p.name}</td>
+                    <td class="py-2.5">#${p.cardId}</td>
+                    <td class="py-2.5 text-amber-400 font-bold">${p.lines} 條線</td>
+                    <td class="py-2.5">${p.bingo ? '<span class="bg-emerald-500/20 text-emerald-300 px-2 py-0.5 rounded text-[10px] font-bold">🎉 BINGO!</span>' : '<span class="text-slate-400">進行中</span>'}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        });
 
-            let count = 0;
-            const maxIntervals = 15;
-            
-            const timer = setInterval(() => {
-                const tempRand = remaining[Math.floor(Math.random() * remaining.length)];
-                display.innerHTML = `<span class="text-xl sm:text-2xl font-serif text-gray-400 opacity-60">${tempRand}</span>`;
-                count++;
+        // 主持人控制功能
+        window.hostCallNext = function() {
+            // 從所有題目中隨機挑選一個還沒被叫過的
+            const remaining = ALL_ITEMS.filter(item => !calledList.includes(item));
+            if (remaining.length === 0) {
+                alert('所有項目都已經叫完了！');
+                return;
+            }
+            const randomItem = remaining[Math.floor(Math.random() * remaining.length)];
+            calledList.push(randomItem);
 
-                if (count >= maxIntervals) {
-                    clearInterval(timer);
-                    
-                    const selected = remaining[Math.floor(Math.random() * remaining.length)];
-                    drawnItems.push(selected);
-
-                    display.innerHTML = `
-                        <div class="animate-bounce">
-                            <span class="text-xs text-fashion-rose font-sans font-semibold tracking-wider block mb-1">NEW DRAWN ITEM</span>
-                            <span class="text-3xl sm:text-4xl font-serif font-extrabold text-fashion-gold drop-shadow-md">
-                                ${selected}
-                            </span>
-                        </div>
-                    `;
-
-                    renderHostList();
-                    triggerConfetti();
-
-                    btn.disabled = false;
-                    btn.classList.remove('opacity-50');
-                    document.getElementById('draw-progress-text').innerText = `最新開出: ${selected}`;
-                }
-            }, 80);
+            set(ref(db, 'gameState'), {
+                calledList: calledList
+            });
         }
 
-        function resetHostGame() {
-            if (confirm("確定要重置主持人叫號紀錄嗎？")) {
-                drawnItems = [];
-                document.getElementById('current-drawn-display').innerHTML = `
-                    <span class="text-xl sm:text-2xl font-serif font-bold text-gray-500 italic">點擊下方按鈕隨機抽號，或直接點選下方清單</span>
-                `;
-                document.getElementById('draw-progress-text').innerText = "準備就緒";
-                renderHostList();
+        window.hostResetGame = function() {
+            if (confirm('確定要重置所有叫號紀錄嗎？')) {
+                set(ref(db, 'gameState'), { calledList: [] });
             }
         }
     </script>
