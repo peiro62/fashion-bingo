@@ -3,25 +3,27 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>EANT-52MD 騰鼎通訊處賓果大挑戰</title>
+    <title>EANT-52MD 時尚穿搭派對賓果 (5x5)</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- 引入煙火特效專用套件 confetti-js -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Noto Sans TC', sans-serif; background-color: #f8fafc; }
+        body { font-family: 'Noto Sans TC', sans-serif; background-color: #0f172a; }
         .bingo-cell { transition: all 0.2s ease; }
     </style>
 </head>
-<body class="bg-slate-900 text-slate-100 min-h-screen flex flex-col items-center justify-between p-3 sm:p-4">
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col items-center justify-between p-3 sm:p-4 relative overflow-x-hidden">
 
     <!-- 頂部導航與模式切換 -->
-    <header class="w-full max-w-2xl flex justify-between items-center bg-slate-800 p-4 rounded-2xl shadow-lg mb-4 border border-slate-700">
+    <header class="w-full max-w-2xl flex justify-between items-center bg-slate-900/90 backdrop-blur p-4 rounded-2xl shadow-xl mb-4 border border-slate-800">
         <div>
-            <h1 class="text-xl font-bold text-amber-400 tracking-wider">✨ 騰鼎通訊處賓果大挑戰</h1>
+            <h1 class="text-xl font-bold text-amber-400 tracking-wider">✨ 時尚派對賓果 (5x5)</h1>
             <p id="user-status" class="text-xs text-slate-400 mt-0.5">尚未加入遊戲</p>
         </div>
         <div class="flex gap-2">
-            <button onclick="switchView('player')" id="btn-player" class="px-3 py-1.5 rounded-xl text-sm font-bold bg-amber-500 text-slate-950 transition">玩家模式</button>
-            <button onclick="checkHostPassword()" id="btn-host" class="px-3 py-1.5 rounded-xl text-sm font-bold bg-slate-700 text-slate-300 transition">主持人管理室</button>
+            <button onclick="switchView('player')" id="btn-player" class="px-3 py-1.5 rounded-xl text-sm font-bold bg-amber-500 text-slate-950 transition shadow">玩家模式</button>
+            <button onclick="checkHostPassword()" id="btn-host" class="px-3 py-1.5 rounded-xl text-sm font-bold bg-slate-800 text-slate-300 transition border border-slate-700">主持人室</button>
         </div>
     </header>
 
@@ -29,17 +31,17 @@
     <main class="w-full max-w-2xl flex-1 flex flex-col gap-4">
 
         <!-- 玩家登入與卡片選擇區 -->
-        <div id="view-login" class="bg-slate-800 p-6 rounded-2xl border border-slate-700 shadow-xl flex flex-col gap-4">
-            <h2 class="text-lg font-bold text-amber-300">加入遊戲</h2>
+        <div id="view-login" class="bg-slate-900 p-6 rounded-2xl border border-slate-800 shadow-2xl flex flex-col gap-4">
+            <h2 class="text-lg font-bold text-amber-300">加入派對遊戲</h2>
             <div>
                 <label class="block text-sm text-slate-300 mb-1">你的名字 / 暱稱：</label>
-                <input type="text" id="input-name" placeholder="例如：Fashion小香" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:border-amber-400">
+                <input type="text" id="input-name" placeholder="例如：Fashion小香" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:border-amber-400">
             </div>
             <div>
                 <label class="block text-sm text-slate-300 mb-1">選擇賓果卡編號 (1 - 90)：</label>
-                <input type="number" id="input-card-id" min="1" max="90" value="1" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:border-amber-400">
+                <input type="number" id="input-card-id" min="1" max="90" value="1" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:border-amber-400">
             </div>
-            <button onclick="joinGame()" class="w-full bg-gradient-to-r from-amber-500 to-yellow-500 text-slate-950 font-bold py-3 rounded-xl shadow-lg hover:brightness-115 transition">進入賓果派對</button>
+            <button onclick="joinGame()" class="w-full bg-gradient-to-r from-amber-500 to-yellow-500 text-slate-950 font-black py-3 rounded-xl shadow-lg hover:brightness-110 transition">進入賓果派對</button>
         </div>
 
         <!-- 玩家遊戲面板 -->
@@ -56,11 +58,16 @@
                 </div>
             </div>
 
+            <!-- BINGO 達成祝賀橫幅 -->
+            <div id="bingo-banner" class="hidden bg-gradient-to-r from-emerald-600 to-teal-600 border border-emerald-400 p-3 rounded-xl text-center text-white font-black text-lg shadow-lg animate-bounce">
+                🎉 太神啦！成功解鎖新連線！ 🎉
+            </div>
+
             <!-- 賓果卡片本體 (5x5) -->
-            <div class="bg-slate-800 p-3 sm:p-4 rounded-2xl border border-slate-700 shadow-2xl">
+            <div id="card-container" class="bg-slate-900 p-3 sm:p-4 rounded-2xl border border-slate-800 shadow-2xl transition-all duration-300">
                 <div class="flex justify-between items-center mb-3">
                     <h3 id="card-title" class="font-bold text-amber-300 text-sm">卡片 #1</h3>
-                    <span class="text-xs text-slate-400">點擊格子即可劃記（中心為 FREE）</span>
+                    <span class="text-xs text-slate-400">點擊格子劃記（中心為 FREE）</span>
                 </div>
                 <div id="bingo-grid" class="grid grid-cols-5 gap-1.5 sm:gap-2">
                     <!-- 動態生成 25 格 -->
@@ -70,7 +77,7 @@
 
         <!-- 主持人管理室 -->
         <div id="view-host" class="hidden flex flex-col gap-4">
-            <div class="bg-slate-800 p-5 rounded-2xl border border-slate-700 shadow-xl flex flex-col gap-4">
+            <div class="bg-slate-900 p-5 rounded-2xl border border-slate-800 shadow-xl flex flex-col gap-4">
                 <h2 class="text-lg font-bold text-amber-400">主持人控制台</h2>
                 <div class="flex flex-wrap gap-2">
                     <button onclick="hostCallNext()" class="flex-1 bg-amber-500 text-slate-950 font-bold py-3 px-4 rounded-xl shadow hover:bg-amber-400 transition">🎲 隨機叫出下一題/號</button>
@@ -79,18 +86,18 @@
                 </div>
                 <div>
                     <span class="text-xs text-slate-400">已叫過的項目/號碼紀錄：</span>
-                    <div id="host-called-history" class="flex flex-wrap gap-1.5 mt-2 max-h-28 overflow-y-auto p-2 bg-slate-900 rounded-xl border border-slate-800 text-xs text-slate-300">
+                    <div id="host-called-history" class="flex flex-wrap gap-1.5 mt-2 max-h-28 overflow-y-auto p-2 bg-slate-950 rounded-xl border border-slate-800 text-xs text-slate-300">
                         無
                     </div>
                 </div>
             </div>
 
             <!-- 即時玩家戰況看板 -->
-            <div class="bg-slate-800 p-5 rounded-2xl border border-slate-700 shadow-xl flex flex-col gap-3">
+            <div class="bg-slate-900 p-5 rounded-2xl border border-slate-800 shadow-xl flex flex-col gap-3">
                 <h3 class="font-bold text-amber-300 text-sm">🏆 現場玩家即時戰況排行榜</h3>
                 <div class="overflow-x-auto">
                     <table class="w-full text-left text-xs text-slate-300">
-                        <thead class="border-b border-slate-700 text-slate-400">
+                        <thead class="border-b border-slate-800 text-slate-400">
                             <tr>
                                 <th class="pb-2">玩家暱稱</th>
                                 <th class="pb-2">卡片編號</th>
@@ -108,7 +115,7 @@
 
     </main>
 
-    <footer class="w-full text-center text-xs text-slate-500 mt-6">
+    <footer class="w-full text-center text-xs text-slate-600 mt-6">
         EANT-52MD Fashion Bingo Party &copy; 2026
     </footer>
 
@@ -117,7 +124,6 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getDatabase, ref, set, get, onValue, remove } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
-        // Firebase 配置
         const firebaseConfig = {
             apiKey: "AIzaSyC0D5jcL3P0v6twKi1FYouKZY7fxEc2OnU",
             authDomain: "fashion-bingo-f6326.firebaseapp.com",
@@ -132,7 +138,6 @@
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
 
-        // 你專屬的完整時尚賓果題庫清單
         const ALL_ITEMS = [
             "墨鏡", "頭巾/絲巾", "帽子/項鍊", "手鍊/戒指",
             "耳環/耳骨夾", "腰鏈/皮帶/金屬扣環", "胸針/別針", "格紋/豹紋",
@@ -151,7 +156,6 @@
                 [items[i], items[j]] = [items[j], items[i]];
             }
             let card25 = items.slice(0, 24);
-            // 插入中心 FREE 格（第 13 格，索引 12）
             card25.splice(12, 0, "【FREE】GD & Jennie");
             return card25;
         }
@@ -161,6 +165,7 @@
         let myMarks = Array(25).fill(false);
         myMarks[12] = true;
         let calledList = [];
+        let previousLines = 0; // 記錄上一次的連線數，用來判斷是否新增連線
 
         window.checkHostPassword = function() {
             const pwd = prompt("請輸入主持人管理密碼：");
@@ -175,8 +180,8 @@
             document.getElementById('view-login').classList.add('hidden');
             document.getElementById('view-player').classList.add('hidden');
             document.getElementById('view-host').classList.add('hidden');
-            document.getElementById('btn-player').className = "px-3 py-1.5 rounded-xl text-sm font-bold bg-slate-700 text-slate-300 transition";
-            document.getElementById('btn-host').className = "px-3 py-1.5 rounded-xl text-sm font-bold bg-slate-700 text-slate-300 transition";
+            document.getElementById('btn-player').className = "px-3 py-1.5 rounded-xl text-sm font-bold bg-slate-800 text-slate-300 transition border border-slate-700";
+            document.getElementById('btn-host').className = "px-3 py-1.5 rounded-xl text-sm font-bold bg-slate-800 text-slate-300 transition border border-slate-700";
 
             if (view === 'player') {
                 if (!currentUser) {
@@ -184,10 +189,10 @@
                 } else {
                     document.getElementById('view-player').classList.remove('hidden');
                 }
-                document.getElementById('btn-player').className = "px-3 py-1.5 rounded-xl text-sm font-bold bg-amber-500 text-slate-950 transition";
+                document.getElementById('btn-player').className = "px-3 py-1.5 rounded-xl text-sm font-bold bg-amber-500 text-slate-950 transition shadow";
             } else {
                 document.getElementById('view-host').classList.remove('hidden');
-                document.getElementById('btn-host').className = "px-3 py-1.5 rounded-xl text-sm font-bold bg-amber-500 text-slate-950 transition";
+                document.getElementById('btn-host').className = "px-3 py-1.5 rounded-xl text-sm font-bold bg-amber-500 text-slate-950 transition shadow";
             }
         }
 
@@ -201,6 +206,7 @@
             currentCardId = cardId;
             myMarks = Array(25).fill(false);
             myMarks[12] = true;
+            previousLines = 0;
 
             document.getElementById('user-status').innerText = `玩家：${name} (卡片 #${cardId})`;
             switchView('player');
@@ -217,7 +223,16 @@
             items.forEach((item, index) => {
                 const cell = document.createElement('div');
                 const isMarked = myMarks[index];
-                cell.className = `bingo-cell h-16 sm:h-20 rounded-xl p-1.5 sm:p-2 flex items-center justify-center text-center text-[11px] sm:text-xs font-bold cursor-pointer border select-none ${isMarked ? 'bg-amber-500 text-slate-950 border-amber-400 shadow-md font-black' : 'bg-slate-900 text-slate-200 border-slate-700 hover:border-slate-500'}`;
+                const isFree = index === 12;
+
+                if (isFree) {
+                    cell.className = `bingo-cell h-16 sm:h-20 rounded-xl p-1.5 sm:p-2 flex items-center justify-center text-center text-[10px] sm:text-xs font-black cursor-pointer border select-none bg-gradient-to-br from-yellow-400 to-amber-600 text-slate-950 border-amber-300 shadow-md`;
+                } else if (isMarked) {
+                    cell.className = `bingo-cell h-16 sm:h-20 rounded-xl p-1.5 sm:p-2 flex items-center justify-center text-center text-[11px] sm:text-xs font-black cursor-pointer border select-none bg-amber-500 text-slate-950 border-amber-300 shadow-lg scale-[1.02]`;
+                } else {
+                    cell.className = `bingo-cell h-16 sm:h-20 rounded-xl p-1.5 sm:p-2 flex items-center justify-center text-center text-[11px] sm:text-xs font-bold cursor-pointer border select-none bg-slate-950 text-slate-200 border-slate-800 hover:border-slate-600`;
+                }
+
                 cell.innerText = item;
                 cell.onclick = () => toggleMark(index);
                 grid.appendChild(cell);
@@ -244,7 +259,35 @@
             });
 
             document.getElementById('player-lines-count').innerText = `${lines} 條線`;
+
+            const banner = document.getElementById('bingo-banner');
+            const cardContainer = document.getElementById('card-container');
+
+            // 只要連線數大於 0 就顯示祝賀區與綠色發光邊框
+            if (lines > 0) {
+                banner.classList.remove('hidden');
+                banner.innerText = `🎉 太神啦！已成功達成 ${lines} 條線！ 🎉`;
+                cardContainer.classList.add('border-emerald-500', 'shadow-[0_0_30px_rgba(16,185,129,0.3)]');
+                
+                // 只要連線數增加（每多達成一條線），就立刻放一次煙火！
+                if (lines > previousLines) {
+                    triggerFireworks();
+                }
+            } else {
+                banner.classList.add('hidden');
+                cardContainer.classList.remove('border-emerald-500', 'shadow-[0_0_30px_rgba(16,185,129,0.3)]');
+            }
+
+            previousLines = lines;
             return lines;
+        }
+
+        function triggerFireworks() {
+            confetti({
+                particleCount: 80,
+                spread: 70,
+                origin: { y: 0.6 }
+            });
         }
 
         function updatePlayerStateToFirebase() {
@@ -255,7 +298,7 @@
                 name: currentUser,
                 cardId: currentCardId,
                 lines: lines,
-                bingo: lines >= 3,
+                bingo: lines >= 3, // 3條線以上保持在管理員後台顯示 BINGO 徽章
                 lastUpdate: Date.now()
             });
         }
@@ -294,12 +337,12 @@
 
             Object.values(playersData).forEach(p => {
                 const tr = document.createElement('tr');
-                tr.className = "border-b border-slate-700/50 hover:bg-slate-700/20";
+                tr.className = "border-b border-slate-800 hover:bg-slate-800/50";
                 tr.innerHTML = `
                     <td class="py-2.5 font-bold text-white">${p.name}</td>
                     <td class="py-2.5">#${p.cardId}</td>
                     <td class="py-2.5 text-amber-400 font-bold">${p.lines} 條線</td>
-                    <td class="py-2.5">${p.bingo ? '<span class="bg-emerald-500/20 text-emerald-300 px-2 py-0.5 rounded text-[10px] font-bold">🎉 BINGO!</span>' : '<span class="text-slate-400">進行中</span>'}</td>
+                    <td class="py-2.5">${p.bingo ? '<span class="bg-emerald-500/20 text-emerald-300 px-2 py-0.5 rounded text-[10px] font-bold border border-emerald-500/30">🎉 BINGO!</span>' : '<span class="text-slate-500">進行中</span>'}</td>
                 `;
                 tbody.appendChild(tr);
             });
