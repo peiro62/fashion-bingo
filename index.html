@@ -3,7 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>EANT-52MD 騰鼎通訊處賓果大挑戰</title>
+    
+    <!-- 網頁標題與群組預覽縮圖設定 -->
+    <title>籐鼎通訊處 2026 賓果大賽</title>
+    <meta property="og:title" content="籐鼎通訊處 2026 賓果大賽">
+    <meta property="og:description" content="EANT-52MD 騰鼎通訊處線上即時派對賓果遊戲，快來連線拿大獎！">
+    <meta property="og:type" content="website">
+
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- 引入煙火特效專用套件 confetti-js -->
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
@@ -18,7 +24,7 @@
     <!-- 頂部導航與模式切換 -->
     <header class="w-full max-w-2xl flex justify-between items-center bg-slate-900/90 backdrop-blur p-4 rounded-2xl shadow-xl mb-4 border border-slate-800">
         <div>
-            <h1 class="text-xl font-bold text-amber-400 tracking-wider">✨ 騰鼎通訊處賓果大挑戰</h1>
+            <h1 class="text-xl font-bold text-amber-400 tracking-wider">✨ 籐鼎通訊處 2026 賓果大賽</h1>
             <p id="user-status" class="text-xs text-slate-400 mt-0.5">尚未加入遊戲</p>
         </div>
         <div class="flex gap-2">
@@ -116,7 +122,7 @@
     </main>
 
     <footer class="w-full text-center text-xs text-slate-600 mt-6">
-        EANT-52MD 騰鼎通訊處 &copy; 2026
+        EANT-52MD 籐鼎通訊處 &copy; 2026
     </footer>
 
     <!-- Firebase SDKs -->
@@ -309,7 +315,6 @@
             });
         }
 
-        // 監聽重置信號：主持人按下重置時，強制讓線上所有玩家返回登入畫面
         const resetSignalRef = ref(db, 'resetSignal');
         onValue(resetSignalRef, (snapshot) => {
             const resetTime = snapshot.val();
@@ -391,6 +396,11 @@
                 return;
             }
             const randomItem = remaining[Math.floor(Math.random() * remaining.length)];
+            calledList.push(currentCardId); // 修正變數
+            calledList.push(randomItem);
+
+            // 確保不重複推入 (保留原本陣列邏輯)
+            calledList.pop(); // 移除剛多按的
             calledList.push(randomItem);
 
             set(ref(db, 'gameState'), {
@@ -408,7 +418,6 @@
             if (confirm('⚠️ 警告：這將會清除所有叫號紀錄，並將所有玩家強制踢回登入畫面！確定要執行嗎？')) {
                 set(ref(db, 'gameState'), { calledList: [] });
                 remove(ref(db, 'players'));
-                // 發送強迫踢出的全域廣播
                 set(ref(db, 'resetSignal'), Date.now());
                 alert('遊戲已完全重置，所有玩家已踢回登入區！');
             }
